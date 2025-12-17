@@ -21,8 +21,10 @@ import com.example.game_project.utilities.SignalManager
 
 class MainActivity : AppCompatActivity() {
 
+    /// --------- LAYOUTS VARIABLES
     private lateinit var gameLayout: LinearLayout
     private lateinit var lanes: Array<RelativeLayout>
+    /// --------- /LAYOUTS VARIABLES/
 
     /// ---------- PLAYER VARIABLES
     private lateinit var player: ImageView
@@ -30,6 +32,13 @@ class MainActivity : AppCompatActivity() {
     private var hearts=3
     private lateinit var hearts_view: Array<ImageView>
     /// ---------- /PLAYER VARIABLES/
+
+    /// --------- ENEMIES VARIABLES
+    private val obstacles = mutableListOf<ImageView>() // list of the cars
+    private val spawnHandler = Handler(Looper.getMainLooper())
+    private val gameHandler = Handler(Looper.getMainLooper())
+
+    /// --------- /ENEMIES VARIABLES/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,20 +49,32 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        val btnLeft: ImageButton = findViewById(R.id.left_button)
-        val btnRight: ImageButton = findViewById(R.id.right_button)
+
+        findViews()
+        initViews()
+        SignalManager.init(applicationContext)
+
+        startSpawning()
+        gameLoop()
+    }
+    private fun findViews()
+    {
         player = findViewById(R.id.player)
         gameLayout = findViewById(R.id.gameLayout)
         lanes = arrayOf(findViewById(R.id.left_lane)  ,  findViewById(R.id.center_lane)  ,  findViewById(R.id.right_lane))
         hearts_view = arrayOf( findViewById(R.id.heart1) , findViewById(R.id.heart2) , findViewById(R.id.heart3))
+    }
+    private fun initViews()
+    {
+        val btnLeft: ImageButton = findViewById(R.id.left_button)
+        val btnRight: ImageButton = findViewById(R.id.right_button)
         btnLeft.setOnClickListener { moveLeft() }
         btnRight.setOnClickListener { moveRight() }
-
         player.post { updatePlayerPosition() }
-        SignalManager.init(applicationContext)
-        startSpawning()
-        gameLoop()
     }
+
+
+    /// ---------- BUTTONS FUNCTIONS
     private fun moveLeft()
     {
         if(playerPos >0)
@@ -70,6 +91,10 @@ class MainActivity : AppCompatActivity() {
             updatePlayerPosition()
         }
     }
+    /// ---------- /BUTTONS FUNCTIONS/
+
+    /// ---------- UPDATE VIEWS
+
     private fun updatePlayerPosition()
     {
         val parent = player.parent as ViewGroup
@@ -81,8 +106,10 @@ class MainActivity : AppCompatActivity() {
         hearts_view[1].visibility = if (hearts >= 2) View.VISIBLE else View.GONE
         hearts_view[2].visibility = if (hearts >= 3) View.VISIBLE else View.GONE
     }
-    private val obstacles = mutableListOf<ImageView>()
-    private val spawnHandler = Handler(Looper.getMainLooper())
+    /// ---------- /UPDATE VIEWS/
+
+
+    /// ---------- SPAWN CARS FUNCTIONS
 
     private fun spawnCar() {
         val car = ImageView(this)
@@ -112,8 +139,10 @@ class MainActivity : AppCompatActivity() {
         }, Constants.Car.SPAWN_DELAY)
     }
 
-    private val gameHandler = Handler(Looper.getMainLooper())
-    private val speed = 12f
+    /// ---------- /SPAWN CARS FUNCTIONS/
+
+
+    /// ---------- GAME FUNCTIONS
 
     private fun gameOver()
     {
@@ -125,21 +154,21 @@ class MainActivity : AppCompatActivity() {
         SignalManager
             .getInstance()
             .vibrate()
-        //Toast.makeText(this, "YOU DIED", Toast.LENGTH_LONG).show()
-        stopSpawning()
-        val iterator = obstacles.iterator()
+        stopSpawning() // stop spawning cars so we will restart the game
+        val iterator = obstacles.iterator() // remove all cars
         while (iterator.hasNext())
         {
             val car = iterator.next()
             (car.parent as RelativeLayout).removeView(car)
             iterator.remove()
         }
-        hearts =3
+        hearts =3 // restart lives
         updateHearts()
-        playerPos=1
+        playerPos=1 // restart player position
         updatePlayerPosition()
-        startSpawning()
-        gameLoop()
+
+        startSpawning() // restart spawning
+        gameLoop()  // restart game
 
     }
     private fun gameLoop() {
@@ -149,7 +178,7 @@ class MainActivity : AppCompatActivity() {
                 val iterator = obstacles.iterator()
                 while (iterator.hasNext()) {
                     val car = iterator.next()
-                    car.y += speed
+                    car.y += Constants.Car.SPEED
 
                     if (car.y > gameLayout.height) {
                         (car.parent as RelativeLayout).removeView(car)
@@ -159,7 +188,12 @@ class MainActivity : AppCompatActivity() {
 
 
                     ///// need to make collission check
-                    if (car.y + car.layoutParams.height > player.y &&  car.y < player.y+ car.layoutParams.height/2 && lanes[playerPos].contains(car))
+                    ///
+                    if (car.y + car.layoutParams.height > player.y    // check if the car reached a point it can touch the player
+                        &&
+                        car.y < player.y+ car.layoutParams.height/2   /// check if car passed player yes the /2 is on purpose to make it easier
+                        &&
+                        lanes[playerPos].contains(car)) // check if car is on the same lane
                     {
                         hearts--
                         (car.parent as RelativeLayout).removeView(car)
@@ -178,3 +212,4 @@ class MainActivity : AppCompatActivity() {
         })
     }
 }
+/// ---------- /GAME FUNCTIONS/
