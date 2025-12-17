@@ -3,7 +3,6 @@ package com.example.game_project
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -17,6 +16,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.contains
 import com.example.game_project.utilities.Constants
+import com.example.game_project.utilities.SignalManager
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,8 +26,8 @@ class MainActivity : AppCompatActivity() {
 
     /// ---------- PLAYER VARIABLES
     private lateinit var player: ImageView
-    private var playerPos=1; ///  0 - left lane 1- middle lane 2- right lane
-    private var hearts=3;
+    private var playerPos=1 ///  0 - left lane 1- middle lane 2- right lane
+    private var hearts=3
     private lateinit var hearts_view: Array<ImageView>
     /// ---------- /PLAYER VARIABLES/
 
@@ -49,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         btnRight.setOnClickListener { moveRight() }
 
         player.post { updatePlayerPosition() }
+        SignalManager.init(applicationContext)
         startSpawning()
         gameLoop()
     }
@@ -72,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     {
         val parent = player.parent as ViewGroup
         parent.removeView(player)
-        lanes[playerPos].addView(player);
+        lanes[playerPos].addView(player)
     }
     private fun updateHearts() {
         hearts_view[0].visibility = if (hearts >= 1) View.VISIBLE else View.GONE
@@ -115,17 +117,26 @@ class MainActivity : AppCompatActivity() {
 
     private fun gameOver()
     {
+        SignalManager
+            .getInstance()
+            .toast(
+                "YOU DIED!",
+                SignalManager.ToastLength.LONG)
+        SignalManager
+            .getInstance()
+            .vibrate()
+        //Toast.makeText(this, "YOU DIED", Toast.LENGTH_LONG).show()
         stopSpawning()
         val iterator = obstacles.iterator()
         while (iterator.hasNext())
         {
             val car = iterator.next()
-            (car.parent as RelativeLayout).removeView(car);
+            (car.parent as RelativeLayout).removeView(car)
             iterator.remove()
         }
-        hearts =3;
+        hearts =3
         updateHearts()
-        playerPos=1;
+        playerPos=1
         updatePlayerPosition()
         startSpawning()
         gameLoop()
@@ -141,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                     car.y += speed
 
                     if (car.y > gameLayout.height) {
-                        (car.parent as RelativeLayout).removeView(car);
+                        (car.parent as RelativeLayout).removeView(car)
                         iterator.remove()
                         continue
                     }
@@ -150,11 +161,10 @@ class MainActivity : AppCompatActivity() {
                     ///// need to make collission check
                     if (car.y + car.layoutParams.height > player.y &&  car.y < player.y+ car.layoutParams.height/2 && lanes[playerPos].contains(car))
                     {
-                        hearts--;
-                        (car.parent as RelativeLayout).removeView(car);
+                        hearts--
+                        (car.parent as RelativeLayout).removeView(car)
                         iterator.remove()
                         updateHearts()
-
                         continue
                     }
                 }
