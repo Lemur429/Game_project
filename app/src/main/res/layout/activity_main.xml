@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
@@ -28,7 +27,8 @@
             android:layout_width="50dp"
             android:layout_height="match_parent"
             android:src="@drawable/heart"
-            android:id="@+id/heart3"/>
+            android:id="@+id/heart3"
+            tools:ignore="ContentDescription" />
     </LinearLayout>
 
 
@@ -51,7 +51,7 @@
 
             <ImageView
                 android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:src="@drawable/wolt_driver"
                 android:scaleType="centerCrop"
                 android:layout_centerHorizontal="true"
@@ -88,7 +88,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/heart"
+            android:src="@drawable/arrow"
+            android:rotation="180"
             android:scaleType="fitCenter"
             android:background="@android:color/transparent"
             android:id="@+id/left_button"
@@ -101,7 +102,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/heart"
+            android:src="@drawable/arrow"
             android:scaleType="fitCenter"
             android:id="@+id/right_button"
             android:background="@android:color/transparent"
